@@ -10,27 +10,30 @@ import (
 )
 
 func main() {
-	path := "."
+	rootPath := "."
 	if len(os.Args) > 1 {
-		path = os.Args[1]
+		rootPath = os.Args[1]
 	}
-	path, err := filepath.Abs(path)
+	rootPath, err := filepath.Abs(rootPath)
 	if err != nil {
 		panic(err)
 	}
 
 	repositories := make([]string, 0)
-	findRepositories(path, &repositories)
-	count := len(repositories)
-	switch count {
+	findRepositories(rootPath, &repositories)
+	switch count := len(repositories); count {
 	case 0:
-		fmt.Printf("No git repositories found inside %s\n", path)
+		fmt.Printf("No git repositories found inside %s\n", rootPath)
 	case 1:
 		fmt.Println("Fetching one found repository...")
 	default:
 		fmt.Printf("Fetching %d found repositories...\n", count)
 	}
 
+	fetchRepositories(repositories)
+}
+
+func fetchRepositories(repositories []string) {
 	start := time.Now()
 	done := make(chan string)
 	for _, repository := range repositories {
@@ -40,7 +43,7 @@ func main() {
 		<-done
 	}
 	elapsed := time.Since(start)
-	if count > 0 {
+	if count := len(repositories); count > 0 {
 		switch count {
 		case 1:
 			fmt.Printf("Fetched one repository in %s\n", elapsed)
@@ -55,7 +58,10 @@ func fetchRepository(path string, done chan<- string) {
 	fetchCmd := exec.Command("git", "fetch", "--all")
 	fetchCmd.Dir = path
 	if err := fetchCmd.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "fetch %v: %v\n", path, err)
+		_, err := fmt.Fprintf(os.Stderr, "fetch %v: %v\n", path, err)
+		if err != nil {
+			fmt.Printf("fetch %v: %v\n", path, err)
+		}
 	}
 	done <- path
 }
