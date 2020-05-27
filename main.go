@@ -58,9 +58,10 @@ func fetchRepository(path string, done chan<- string) {
 	fetchCmd := exec.Command("git", "fetch", "--all")
 	fetchCmd.Dir = path
 	if err := fetchCmd.Run(); err != nil {
-		_, err := fmt.Fprintf(os.Stderr, "fetch %v: %v\n", path, err)
-		if err != nil {
+		_, errStderr := fmt.Fprintf(os.Stderr, "fetch %v: %v\n", path, err)
+		if errStderr != nil {
 			fmt.Printf("fetch %v: %v\n", path, err)
+			fmt.Printf("output to stderr: %v\n", errStderr)
 		}
 	}
 	done <- path
