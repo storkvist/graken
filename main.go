@@ -6,13 +6,21 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 )
+
+const version = "0.1.0"
 
 func main() {
 	rootPath := "."
 	if len(os.Args) > 1 {
 		rootPath = os.Args[1]
+
+		if rootPath == "version" {
+			fmt.Printf("graken v%v %v/%v\n", version, runtime.GOOS, runtime.GOARCH)
+			os.Exit(0)
+		}
 	}
 	rootPath, err := filepath.Abs(rootPath)
 	if err != nil {
